@@ -1,7 +1,10 @@
 import pandas as pd
 import os
 #import sklearn
-from sklearn.preprocessing import OrdinalEncoder 
+from sklearn.preprocessing import OrdinalEncoder
+from sklearn.decomposition import PCA
+import numpy as np
+from scipy.fftpack import dct 
 #import scikit-learn
 #print(sklearn.__version__)  #should print a version number
 
@@ -25,6 +28,10 @@ adult_test = pd.read_csv(test_file_path, header = None, names = column_names, na
 cleaned_data = adult_data.dropna()
 cleaned_test = adult_test.dropna()
 print("Cleaning complete. Missing values from adult_data and adult_test have been removed.")
+print(f"Shape of initial data set: {adult_data.shape}")
+print(f"Shape of cleaned data set: {cleaned_data.shape}")
+print(f"Shape of initial training set: {adult_test.shape}")
+print(f"Shape of cleaned training set: {cleaned_test.shape}")
 
 #combine datasets before defining category lists
 all_data = pd.concat([cleaned_data, cleaned_test], axis=0)
@@ -52,3 +59,13 @@ cleaned_test_file_path = os.path.join(folder_path, "adult_test_cleaned.csv")
 cleaned_test.to_csv(cleaned_test_file_path, index=False)
 
 print("Processing complete. Ordinal numerical dataset saved to cleaned files.")
+print("The following categorical columns were altered:", categorical_columns)
+
+
+#subfunction for removing the categorical columns, question 5
+#def remove_categorical_columns(df, categorical_cols):
+#    return df.drop(columns=categorical_cols, errors='ignore')
+
+# Remove categorical columns from the dataset
+#cleaned_data = remove_categorical_columns(cleaned_data, categorical_columns)
+#cleaned_test = remove_categorical_columns(cleaned_test, categorical_columns)
