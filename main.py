@@ -24,7 +24,8 @@ folder_path = "adult"
 data_file_path = os.path.join(folder_path, "adult.data")
 test_file_path = os.path.join(folder_path, "adult.test")
 
-#define wine file path and load dataset
+#define wine folder and file path and load dataset 
+#   needs to be worked on as the data needs to be turned numerical for PCA 
 wfolder_path = "wine+quality"
 redwine_file_path = 'wine+quality/winequality-red.csv'
 redwine_data = pd.read_csv(redwine_file_path)
