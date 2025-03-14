@@ -14,11 +14,22 @@ column_names = [
     "age", "workclass", "fnlwgt", "education", "education-num", "marital-status", "occupation", "relationship","race","sex","capital-gain",
     "capital-loss", "hours-per-week", "native-country", "income"
 ]
+wcolumn_names = [
+    "fixed acidity","volatile acidity","citric acid","residual sugar","chlorides","free sulfur dioxide","total sulfur dioxide",
+    "density","pH","sulphates","alcohol","quality"
+]
 
 #define folder path where adult_data/test reside
 folder_path = "adult"
 data_file_path = os.path.join(folder_path, "adult.data")
 test_file_path = os.path.join(folder_path, "adult.test")
+
+#define wine file path and load dataset
+wfolder_path = "wine+quality"
+redwine_file_path = 'wine+quality/winequality-red.csv'
+redwine_data = pd.read_csv(redwine_file_path)
+whitewine_file_path = 'wine+quality/winequality-white.csv'
+whitewine_data = pd.read_csv(whitewine_file_path)
 
 #load dataset, update file path
 adult_data = pd.read_csv(data_file_path, header = None, names = column_names, na_values = " ?")
@@ -61,6 +72,43 @@ cleaned_test.to_csv(cleaned_test_file_path, index=False)
 print("Processing complete. Ordinal numerical dataset saved to cleaned files.")
 print("The following categorical columns were altered:", categorical_columns)
 
+#PCA of cleaned_data
+cleaned_data_centered= cleaned_data - cleaned_data.mean() #centers the data by subtracting the mean
+cleaned_data_scaled = cleaned_data_centered / cleaned_data.std() #scales the data by dividing by the standarddeviation
+
+pca = PCA(n_components=2)
+cleaned_data_pca = pca.fit_transform(cleaned_data_scaled)
+
+print("Explained variance ratio of each component of adult data:", pca.explained_variance_ratio_)
+
+cleaned_data_pca_df = pd.DataFrame(cleaned_data_pca, columns=['PC1', 'PC2'])
+cleaned_data_pca_file_path = os.path.join(folder_path, "cleaned_adult_data_PCAreduced.csv")
+cleaned_data_pca_df.to_csv(cleaned_data_pca_file_path, index=False)
+
+#PCA of cleaned_test (Numeric Columns only)
+numeric_columns = cleaned_test.select_dtypes(include=[np.number]).columns
+cleaned_test_centered = cleaned_test[numeric_columns] - cleaned_test[numeric_columns].mean() #centers the data by subtracting the mean
+cleaned_test_scaled = cleaned_test_centered / cleaned_test[numeric_columns].std() #scales the data by dividing by the standard deviation
+ctpca = PCA(n_components=2)
+cleaned_test_pca = ctpca.fit_transform(cleaned_test_scaled)
+
+print("Explained variance ratio of each component of adult test:", ctpca.explained_variance_ratio_)
+
+cleaned_test_pca_df = pd.DataFrame(cleaned_test_pca, columns=['PC1', 'PC2'])
+cleaned_test_pca_file_path = os.path.join(folder_path, "cleaned_adult_test_PCAreduced.csv")
+cleaned_test_pca_df.to_csv(cleaned_test_pca_file_path, index=False)
+
+#PCA red wine data
+redwine_data_centered = redwine_data - redwine_data.mean()
+redwine_data_scaled = redwine_data_centered / redwine_data.std()
+
+rwpca = PCA(n_components=2)
+redwine_pca = rwpca.fit_transform(redwine_data_scaled)
+
+print("Explained variance ratio of each component of red wine", rwpca.explained_variance_ratio_)
+redwine_pca_df = pd.DataFrame(redwine_pca, columns=['PC1', 'PC2'])
+redwine_pca_filepath = os.path.join(wfolder_path, "redwine_reducedPCA.csv")
+redwine_pca_df.to_csv(redwine_pca_filepath, index=False)
 
 #subfunction for removing the categorical columns, question 5
 #def remove_categorical_columns(df, categorical_cols):
