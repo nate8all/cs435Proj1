@@ -74,17 +74,42 @@ print("Processing complete. Ordinal numerical dataset saved to cleaned files.")
 print("The following categorical columns were altered:", categorical_columns)
 
 #PCA of cleaned_data
-cleaned_data_centered= cleaned_data - cleaned_data.mean() #centers the data by subtracting the mean
-cleaned_data_scaled = cleaned_data_centered / cleaned_data.std() #scales the data by dividing by the standarddeviation
+cleaned_data_array = np.array(cleaned_data, dtype=float)
 
-pca = PCA(n_components=2)
-cleaned_data_pca = pca.fit_transform(cleaned_data_scaled)
 
-print("Explained variance ratio of each component of adult data:", pca.explained_variance_ratio_)
+mean = cleaned_data_array.mean(axis=0)
+std = cleaned_data_array.std(axis=0)
+print("Constant Columns:", np.where(std == 0)[0])
+std[std == 0] = 1e-8
 
-cleaned_data_pca_df = pd.DataFrame(cleaned_data_pca, columns=['PC1', 'PC2'])
-cleaned_data_pca_file_path = os.path.join(folder_path, "cleaned_adult_data_PCAreduced.csv")
-cleaned_data_pca_df.to_csv(cleaned_data_pca_file_path, index=False)
+
+cleaned_data_centered = cleaned_data_array - mean #centers the data by subtracting the mean
+cleaned_data_strd = cleaned_data_centered / std  #scales the data by dividing by the standard deviation
+
+#With PCA function
+# pca = PCA(n_components=2)
+# cleaned_data_pca = pca.fit_transform(cleaned_data_strd)
+
+# print("Explained variance ratio of each component of adult data:", pca.explained_variance_ratio_)
+
+
+
+#Without PCA function
+cd_cov_matrix =  np.cov(cleaned_data_strd, rowvar=False) #computes the covariance matrix
+evalues, evectors = np.linalg.eig(cd_cov_matrix)
+
+indices = np.argsort(evalues)[::-1]
+sorted_evalues = evalues[indices]
+sorted_evectors = evectors[:, indices]
+
+k = 2 #number of principal components
+top_evectors = sorted_evectors[:, :k]
+
+cd_pca = np.dot(cleaned_data_strd, top_evectors)
+cd_pca_df = pd.DataFrame(cd_pca, columns=['PC1', 'PC2'])
+cd_pca_filepath = os.path.join(folder_path, "cleaned_data_PCA.csv")
+cd_pca_df.to_csv(cd_pca_filepath, index=False)
+
 
 #PCA of cleaned_test (Numeric Columns only)
 numeric_columns = cleaned_test.select_dtypes(include=[np.number]).columns
@@ -99,17 +124,17 @@ cleaned_test_pca_df = pd.DataFrame(cleaned_test_pca, columns=['PC1', 'PC2'])
 cleaned_test_pca_file_path = os.path.join(folder_path, "cleaned_adult_test_PCAreduced.csv")
 cleaned_test_pca_df.to_csv(cleaned_test_pca_file_path, index=False)
 
-#PCA red wine data
-redwine_data_centered = redwine_data - redwine_data.mean()
-redwine_data_scaled = redwine_data_centered / redwine_data.std()
+# #PCA red wine data
+# redwine_data_centered = redwine_data - redwine_data.mean()
+# redwine_data_scaled = redwine_data_centered / redwine_data.std()
 
-rwpca = PCA(n_components=2)
-redwine_pca = rwpca.fit_transform(redwine_data_scaled)
+# rwpca = PCA(n_components=2)
+# redwine_pca = rwpca.fit_transform(redwine_data_scaled)
 
-print("Explained variance ratio of each component of red wine", rwpca.explained_variance_ratio_)
-redwine_pca_df = pd.DataFrame(redwine_pca, columns=['PC1', 'PC2'])
-redwine_pca_filepath = os.path.join(wfolder_path, "redwine_reducedPCA.csv")
-redwine_pca_df.to_csv(redwine_pca_filepath, index=False)
+# print("Explained variance ratio of each component of red wine", rwpca.explained_variance_ratio_)
+# redwine_pca_df = pd.DataFrame(redwine_pca, columns=['PC1', 'PC2'])
+# redwine_pca_filepath = os.path.join(wfolder_path, "redwine_reducedPCA.csv")
+# redwine_pca_df.to_csv(redwine_pca_filepath, index=False)
 
 #subfunction for removing the categorical columns, question 5
 #def remove_categorical_columns(df, categorical_cols):
